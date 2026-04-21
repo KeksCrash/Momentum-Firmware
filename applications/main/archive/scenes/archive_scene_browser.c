@@ -6,6 +6,8 @@
 #include "../views/archive_browser_view.h"
 #include "archive/scenes/archive_scene.h"
 
+#include <desktop/desktop_i.h>
+
 #define TAG "ArchiveSceneBrowser"
 
 #define SCENE_STATE_DEFAULT      (0)
@@ -27,6 +29,8 @@ const char* archive_get_flipper_app_name(ArchiveFileTypeEnum file_type) {
         return EXT_PATH("apps/Sub-Ghz/subghz_playlist.fap");
     case ArchiveFileTypeSubghzRemote:
         return EXT_PATH("apps/Sub-Ghz/subghz_remote.fap");
+    case ArchiveFileTypeProtoPirate:
+        return EXT_PATH("apps/Sub-Ghz/proto_pirate.fap");
     case ArchiveFileTypeInfraredRemote:
         return EXT_PATH("apps/Infrared/ir_remote.fap");
     case ArchiveFileTypeBadUsb:
@@ -37,6 +41,8 @@ const char* archive_get_flipper_app_name(ArchiveFileTypeEnum file_type) {
         return EXT_PATH("apps/GPIO/magspoof.fap");
     case ArchiveFileTypeCrossRemote:
         return EXT_PATH("apps/Infrared/xremote.fap");
+    case ArchiveFileTypePicopass:
+        return EXT_PATH("apps/NFC/picopass.fap");
     case ArchiveFileTypeU2f:
         return "U2F";
     case ArchiveFileTypeUpdateManifest:
@@ -182,6 +188,12 @@ static void
         }
     } else if(selected->type == ArchiveFileTypeApplication) {
         loader_start_detached_with_gui_error(loader, furi_string_get_cstr(selected->path), NULL);
+    } else if(selected->type == ArchiveFileTypeFolder) {
+        // Folders are handled by archive, so we should only get here with run_with_default_app() outside archive
+        furi_check(browser == NULL, "What you doin?");
+        Desktop* desktop = furi_record_open(RECORD_DESKTOP);
+        desktop_launch_archive(desktop, furi_string_get_cstr(selected->path));
+        furi_record_close(RECORD_DESKTOP);
     } else {
         archive_show_file(loader, furi_string_get_cstr(selected->path));
     }

@@ -229,23 +229,29 @@ SubGhz* subghz_alloc(bool alloc_for_tx_only) {
         }
 
         subghz_txrx_set_preset_internal(
-            subghz->txrx, subghz->last_settings->frequency, subghz->last_settings->preset_index);
+            subghz->txrx,
+            subghz->last_settings->frequency,
+            subghz->last_settings->preset_index,
+            subghz->tx_power);
         subghz->history = subghz_history_alloc();
     }
 
     subghz_rx_key_state_set(subghz, SubGhzRxKeyStateIDLE);
 
-    subghz->secure_data = malloc(sizeof(SecureData));
+    subghz->gen_info = malloc(sizeof(GenInfo));
 
     if(!alloc_for_tx_only) {
         subghz->remove_duplicates = subghz->last_settings->remove_duplicates;
         subghz->ignore_filter = subghz->last_settings->ignore_filter;
         subghz->filter = subghz->last_settings->filter;
+        subghz->tx_power = subghz->last_settings->tx_power;
     } else {
         subghz->filter = SubGhzProtocolFlag_Decodable;
         subghz->ignore_filter = 0x0;
         subghz->remove_duplicates = false;
+        subghz->tx_power = 0;
     }
+
     subghz_txrx_receiver_set_filter(subghz->txrx, subghz->filter);
     subghz_txrx_receiver_set_ignore_filter(subghz->txrx, subghz->ignore_filter);
     subghz_txrx_set_need_save_callback(subghz->txrx, subghz_save_to_file, subghz);
@@ -346,7 +352,7 @@ void subghz_free(SubGhz* subghz, bool alloc_for_tx_only) {
         subghz_history_free(subghz->history);
     }
 
-    free(subghz->secure_data);
+    free(subghz->gen_info);
 
     //TxRx
     subghz_txrx_free(subghz->txrx);

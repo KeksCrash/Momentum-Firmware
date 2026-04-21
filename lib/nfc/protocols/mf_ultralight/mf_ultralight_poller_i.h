@@ -11,6 +11,8 @@ extern "C" {
 #define MF_ULTRALIGHT_POLLER_STANDARD_FWT_FC (60000)
 #define MF_ULTRALIGHT_MAX_BUFF_SIZE          (64)
 
+#define MF_ULTRALIGHT_DEFAULT_PASSWORD (0xffffffffUL)
+
 #define MF_ULTRALIGHT_IS_NTAG_I2C(type)                                                \
     (((type) == MfUltralightTypeNTAGI2C1K) || ((type) == MfUltralightTypeNTAGI2C2K) || \
      ((type) == MfUltralightTypeNTAGI2CPlus1K) || ((type) == MfUltralightTypeNTAGI2CPlus2K))
@@ -59,7 +61,6 @@ typedef enum {
     MfUltralightPollerStateAuthMfulC,
     MfUltralightPollerStateReadPages,
     MfUltralightPollerStateTryDefaultPass,
-    MfUltralightPollerStateTryDefaultMfulCKey,
     MfUltralightPollerStateCheckMfulCAuthStatus,
     MfUltralightPollerStateReadFailed,
     MfUltralightPollerStateReadSuccess,
@@ -87,6 +88,8 @@ struct MfUltralightPoller {
     uint8_t tearing_flag_read;
     uint8_t tearing_flag_total;
     uint16_t current_page;
+    bool write_skip_key; // If true, skip writing pages 44-47 (3DES key) during ULC write
+    const MfUltralightData* write_data; // Saved pointer to source data for write phase
     MfUltralightError error;
     mbedtls_des3_context des_context;
 
